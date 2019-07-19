@@ -1,0 +1,150 @@
+{% extends 'layout.html' %}
+{% block main %}
+
+    <header class="soseki">
+        <div>
+            <h1 class="float-left">Soseki Bank</h1>
+            <div style="text-align:right; padding-right:20px;">
+                <br>
+                <small><b>Hello, {{ user.first_name }} {{ user.last_name }}!</b></small>
+            </div>
+
+        </div>
+    </header>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-top border-dark">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse " style="width:100%;" id="navbarNavDropdown">
+            <div class="navbar-nav">
+
+                <div class="nav-item active">
+                    <a class="nav-link text-light" href="{{ url_for('soseki') }}">Your Account</a>
+                </div>
+
+                <div class="nav-item">
+                    <a data-toggle="modal" data-target="#internalTransferModal" class=" btn nav-link text-light">Internal Money Transfer</a>
+                </div>
+
+                <div class="nav-item">
+                    <a class="nav-link text-light" href="{{ url_for('sendmoney') }}">External Money Transfer</a>
+                </div>
+
+                {% if user.admin %}
+                    <div class="nav-item active">
+                        <a class="nav-link text-light" href="{{ url_for('admin') }}">Admin Panel</a>
+                    </div>
+                {% endif %}
+
+                <div class="nav-item">
+                    <a class="nav-link text-light " href="{{ url_for('logout') }}">Log Out</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="card mt-4">
+            <div class="card-header p-3">
+                <h3>Bank Account</h3>
+            </div>
+
+            <div class="card-body">
+                <small>Current Balance:</small>
+                <h1>${{ user.balance }}</h1>
+                <hr>
+                <h4>Transaction Log:</h4>
+                <br>
+                <div class="row border-bottom border-info">
+                    <div class="col-3 border-right">
+                        <b>Date</b>
+                    </div>
+                    <div class="col-6 border-right">
+                        <b>Description</b>
+                    </div>
+                    <div class="col-3">
+                        <b>Amount</b>
+                    </div>
+                </div>
+
+                {% for item in log %}
+                    <div class="row pt-2 border-bottom">
+                        <div class="col-3 border-right">
+                            <p>{{ item.date.strftime('%m/%d/%Y %I:%M') }}</p>
+                        </div>
+                        <div class="col-6 border-right">
+                            <p>From: {{ item.from_account }} <br>To: {{ item.to_account }}</p>
+                        </div>
+                        <div class="col-3">
+                            {% if item.positive %}
+                                <p style="color:green">+${{ item.amount }}</p>
+                            {% else %}
+                                <p style="color:red">-${{ item.amount }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+
+        <!-- Internal Transfer Modal -->
+        <div class="modal fade" id="internalTransferModal" tabindex="-1" role="dialog" aria-labelledby="internalTransferModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Transfer Money to Another Soseki Member</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="POST" action="">
+                            {{ internal_transfer.hidden_tag() }}
+                            <fieldset class="form-group">
+
+                                <div class="form-group">
+                                    {{ internal_transfer.email.label(class="form-control-label") }}
+                                    {% if internal_transfer.email.errors %}
+                                        {{ internal_transfer.email(class="form-control form-control-sm is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in internal_transfer.email.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ internal_transfer.email(class="form-control form-control-sm") }}
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-group">
+                                    {{ internal_transfer.amount.label(class="form-control-label") }}
+                                    {% if internal_transfer.amount.errors %}
+                                        {{ internal_transfer.amount(class="form-control form-control-sm is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in internal_transfer.amount.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ internal_transfer.amount(class="form-control form-control-sm") }}
+                                    {% endif %}
+                                    <small>**Will only take into consideration 2 decimal places, anything after that will be ignored!</small>
+                                </div>
+
+                            </fieldset>
+
+                           <div class="form-group">
+                                {{ internal_transfer.submit(class="btn btn-outline-info") }}
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends 'layout.html' %}
+{% block main %}
+
+    <header class="soseki">
+        <div>
+            <h1 class="float-left">Soseki Bank</h1>
+            <div style="text-align:right; padding-right:20px;">
+                <br>
+                <small><b>Hello, {{ user.first_name }} {{ user.last_name }}!</b></small>
+            </div>
+
+        </div>
+    </header>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-top border-dark">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse " style="width:100%;" id="navbarNavDropdown">
+            <div class="navbar-nav">
+
+                <div class="nav-item active">
+                    <a class="nav-link text-light" href="{{ url_for('soseki') }}">View Your Account</a>
+                </div>
+
+                <div class="nav-item">
+                    <a data-toggle="modal" data-target="#newAdmin" class="btn nav-link text-light">Create New Admin</a>
+                </div>
+
+                <div class="nav-item">
+                    <a class="nav-link text-light " href="{{ url_for('logout') }}">Log Out</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="card mt-4">
+            <div class="card-header p-3">
+                <h3>All Users</h3>
+            </div>
+            <div class="card-body">
+
+                <div class="row border-bottom border-info">
+                    <div class="col-3 border-right">
+                        <b>Name</b>
+                    </div>
+                    <div class="col-3 border-right">
+                        <b>Email</b>
+                    </div>
+                    <div class="col-3">
+                        <b>Balance</b>
+                    </div>
+                    <div class="col-3 border-right">
+                        <b>Role</b>
+                    </div>
+                </div>
+
+                {% for user in users %}
+                    <div class="row pt-2 border-bottom">
+                        <div class="col-3 border-right">
+                            <p>{{ user.last_name }}, {{ user.first_name }}</p>
+                        </div>
+                        <div class="col-3 border-right">
+                            <p>{{ user.email }}</p>
+                        </div>
+                        <div class="col-3 border-right">
+                            ${{ user.balance }}<br>
+                            <a data-toggle="modal" data-target="#transaction-{{ user.id }}" class="nav-link text-primary btn"><small>View Transactions</small></a>
+                        </div>
+                        <div class="col-3">
+                            {% if user.admin == True %}
+                                Admin
+                            {% else %}
+                                Customer
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="transaction-{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="transaction-modal" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">{{ user.last_name }}, {{ user.first_name }} Transactions</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row border-bottom border-info">
+                                        <div class="col-3 border-right">
+                                            <b>Date</b>
+                                        </div>
+                                        <div class="col-6 border-right">
+                                            <b>Description</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <b>Amount</b>
+                                        </div>
+                                    </div>
+
+
+                                    {% for item in user.logs %}
+                                        <div class="row pt-2 border-bottom">
+                                            <div class="col-3 border-right">
+                                                <p>{{ item.date.strftime('%m/%d/%Y %I:%M') }}</p>
+                                            </div>
+                                            <div class="col-6 border-right">
+                                                <p>From: {{ item.from_account }} <br>To: {{ item.to_account }}</p>
+                                            </div>
+                                            <div class="col-3">
+                                                {% if item.positive %}
+                                                    <p style="color:green">+${{ item.amount }}</p>
+                                                {% else %}
+                                                    <p style="color:red">-${{ item.amount }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="modal fade" id="newAdmin" tabindex="-1" role="dialog" aria-labelledby="newAdminModal" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Create New Admin User</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+                        <form method="POST" action="">
+                            {{ signup_form.hidden_tag() }}
+                            <fieldset class="form-group">
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ signup_form.first_name.label(class="form-control-label") }}
+                                            {% if signup_form.first_name.errors %}
+                                                {{ signup_form.first_name(class="form-control form-control-sm is-invalid") }}
+                                                <div class="invalid-feedback">
+                                                    {% for error in signup_form.first_name.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ signup_form.first_name(class="form-control form-control-sm") }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            {{ signup_form.last_name.label(class="form-control-label") }}
+                                            {% if signup_form.last_name.errors %}
+                                                {{ signup_form.last_name(class="form-control form-control-sm is-invalid") }}
+                                                <div class="invalid-feedback">
+                                                    {% for error in signup_form.last_name.errors %}
+                                                        <span>{{ error }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ signup_form.last_name(class="form-control form-control-sm") }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    {{ signup_form.email.label(class="form-control-label") }}
+                                    {% if signup_form.email.errors %}
+                                        {{ signup_form.email(class="form-control form-control-sm is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in signup_form.email.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ signup_form.email(class="form-control form-control-sm") }}
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-group">
+                                    {{ signup_form.password.label(class="form-control-label") }}
+                                    {% if signup_form.password.errors %}
+                                        {{ signup_form.password(class="form-control form-control-sm is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in signup_form.password.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ signup_form.password(class="form-control form-control-sm") }}
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-group">
+                                    {{ signup_form.confirm_password.label(class="form-control-label") }}
+                                    {% if signup_form.confirm_password.errors %}
+                                        {{ signup_form.confirm_password(class="form-control form-control-sm is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in signup_form.confirm_password.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ signup_form.confirm_password(class="form-control form-control-sm") }}
+                                    {% endif %}
+                                </div>
+
+                            </fieldset>
+
+                            <div class="form-group">
+                                 {{ signup_form.submit(class="btn btn-outline-info") }}
+                            </div>
+
+                        </form>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+{% endblock %}

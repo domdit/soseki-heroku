@@ -1,0 +1,50 @@
+body {
+    background-color: #edebe3;
+}
+
+.login-container {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login {
+    min-width:50%;
+}
+
+header.soseki div{
+    padding:5px 0px 5px 20px;
+    height:65px;
+    width:100%;
+    color: white;
+    background-color: #5f8059;
+    background-image: url("https://www.transparenttextures.com/patterns/soft-circle-scales.png");
+}
+
+.navbar {
+    width: 100%;
+}
+
+button.btn:hover{
+    color: grey;
+}
+
+main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+main .card{
+    min-width:50%;
+}
+
+main h1 {
+    color: lightblue;
+}
+
+#internalTransferModal .modal-header{
+    background-color: #5f8059;
+    color: white;
+}
